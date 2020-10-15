@@ -1,4 +1,5 @@
 ### CH 02. 분할표
+
 ## Section 2.2. 2x2 분할표의 비율 비교
 # p1-p2의 왈도 신뢰구간
 prop.test(c(189,104), c(11034,11037), conf.level=0.95, correct=FALSE)
@@ -18,6 +19,7 @@ riskscoreci(189,11034,104,11037, conf.level=0.95)
 
 ## Section 2.3. 오즈비
 # 오즈비의 왈도 신뢰구간
+install.packages("epitools")
 library(epitools)
 oddsratio(c(189,10845,104,10933), method="wald", conf=0.95, correct=FALSE)
   # 위약그룹 심근경색증 환자수, 심근경색증 아닌 환자수, 아스피린그룹 심근경색증 환자수, 심근경색 아닌 환자수
@@ -34,19 +36,27 @@ orscoreci(189,11034,104,11037, conf.level=0.95)
 Political <- read.table("http://www.stat.ufl.edu/~aa/cat/data/Political.dat", header=TRUE)
   # web자료 불러들일 때 
 str(Political)
+# factor : 문자형 혹은 숫자형 변수를 범주형으로 변경
 Political$Party <- factor(Political$party, levels=c("Dem", "Rep", "Ind"))
+# xtabs : 분할표 생성
+# ()로 묶은 이유 : GenderGap에 할당과 동시에 출력 위해
 (GenderGap <- xtabs(~gender+Party, data=Political))
 # GenderGap <- matrix(c(495,272,590,330,265,498), ncol=3, byrow=TRUE)
 (chi.GG <- chisq.test(GenderGap)) # Peason 카이제곱 검정
 chi.GG$stdres #표준화잔차
 
+# 칸도수의 상대적 크기로 그린 모자이크 그림 
 mosaicplot(GenderGap, main="Mosaic Plot", xlab="Gender", color=TRUE) 
-  # 칸도수의 상대적 크기로 그린 모자이크 그림 
+#칸도수와 표준화잔차의 상대적인 크기로 그린 모자이크 그림 
+install.packages("vcd")
 library(vcd)
 mosaic(GenderGap, gp=shading_Friendly, residuals=chi.GG$stdres, residuals_type="Std\nresiduals",
        labeling=labeling_residuals)
-  #칸도수와 표준화잔차의 상대적인 크기로 그린 모자이크 그림 
 
+# 가능도비 카이제곱 검정
+install.packages("Deducer")
+library(Deducer)
+likelihood.test(GenderGap)
 
 ## Section 2.5. 순서형 자료의 독립성 검정 
 Malform <- matrix(c(17066, 14464, 788, 126, 37, 48, 38, 5, 1, 1), ncol=2)
