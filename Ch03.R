@@ -39,50 +39,52 @@ summary(fitt)
 
 #########################################################################
 ## Section 3.3. 도수와 비율에 대한 일반화선형모형
-Crabs <-  read.table("http://www.stat.ufl.edu/~aa/cat/data/Crabs.dat", header=TRUE)
    # 암참게와 부수체 자료
-fit <- glm(sat ~ width, family=poisson(link="log"), data=Crabs)
+Crabs <-  read.table("http://www.stat.ufl.edu/~aa/cat/data/Crabs.dat", header=TRUE)
    # 로그선형모형 적합
+fit <- glm(sat ~ width, family=poisson(link="log"), data=Crabs)
 summary(fit)
+   # 항등연결함수를 이용한 포아송 회귀모형
+fit2 <- glm(sat ~ width, family=quasipoisson(link="identity"), start=c(0.5,0.5), data=Crabs)
+summary(fit2)
+  #일반화가법모형 적합
+  # s( )는 일반화가법모형의 평활함수 
+install.packages("gam")
 library(gam)
 gam.fit <- gam(sat ~ s(width), family=poisson, data=Crabs)
-   #일반화가법모형 적합
-   # s( )는 일반화가법모형의 평활함수 
 summary(gam.fit)
-fit2 <- glm(sat ~ width, family=quasipoisson(link="identity"), start=c(0.5,0.5), data=Crabs)
-   # 항등연결함수를 이용한 포아송 회귀모형
-summary(fit2)
 
-plot(sat ~ width, xlab="width", ylab="Number of satellites", data=Crabs)
    # 등딱지 너비(width)(x축)에 대한 부수체 수 (satellite)(y축) 그림
-curve(predict(fit, data.frame(width=x), type="resp"), add=TRUE, col="red", lty=2, lwd=2) 
+plot(sat ~ width, xlab="width", ylab="Number of satellites", data=Crabs)
    # 로그선형모형 적합 곡선
-curve(predict(gam.fit, data.frame(width=x), type="resp"), add=TRUE, col="blue", lty=3, lwd=3) 
+curve(predict(fit, data.frame(width=x), type="resp"), add=TRUE, col="red", lty=2, lwd=2) 
    # 일반화가법 모형 적합곡선
-curve(predict(fit2, data.frame(width=x), type="resp"), add=TRUE, col="violet", lty=4, lwd=3) 
+curve(predict(gam.fit, data.frame(width=x), type="resp"), add=TRUE, col="blue", lty=3, lwd=3) 
 # 항등연결함수를 이용한 포아송 회귀곡선
+curve(predict(fit2, data.frame(width=x), type="resp"), add=TRUE, col="violet", lty=4, lwd=3) 
 
 #########################################################################
 ## Section 3.4. 통계적 추론과 모형진단
-Evo <-  read.table("http://www.stat.ufl.edu/~aa/cat/data/Evolution.dat", header=TRUE)
   # 정치성향과 진화에 대한 믿음 자료 : ideology(정치성향: 설명변수 x)
-Evo$n <- Evo$true + Evo$false 
+Evo <-  read.table("http://www.stat.ufl.edu/~aa/cat/data/Evolution.dat", header=TRUE)
   #이항분포 자료의 표본크기 변수 생성 
-fit <- glm(true/n ~ ideology, family=binomial, weights=n, data=Evo)
+Evo$n <- Evo$true + Evo$false 
   # 로지스틱 회귀모형 적합 : 진화에 대한 믿음 여부가 반응변수 (Ture/False)
+fit <- glm(true/n ~ ideology, family=binomial, weights=n, data=Evo)
 summary(fit)
 
 confint(fit) #프로파일 가능도 신뢰구간
 confint.default(fit) #왈드 신뢰구간
 
-library(car)
-Anova(fit) 
   # 로지스틱 회귀모형에서 정치성향 변수(x변수)의 유의성 가능도비 검정
   # 설명변수가 1개인 로지스틱 모형에서는 적합도 검정으로 사용
+library(car)
+Anova(fit)
+  # 스코어 검정통계량 제곱값 = 스코어 카이제곱 통계량 (df=1)
+  # beta=0인 모형 적합
 library(statmod)
 fit1 <- glm(true/n ~ 1, family=binomial, weights=n, data=Evo) #null model 
 glm.scoretest(fit1, Evo$ideology)^2 
-  # 스코어 검정통계량 제곱값 = 스코어 카이제곱 통계량 (df=1)
 
 
 attach(Evo)
@@ -93,5 +95,3 @@ cbind(ideology, true, false, n,
       dev.res=residuals(fit), # 이탈도 잔차
       std.res=rstandard(fit, type="pearson"))
       # rstandard(fit, type="pearson") : 피어슨 표준화 잔차
-
-
